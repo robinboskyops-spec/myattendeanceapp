@@ -4,8 +4,24 @@ import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 import { GoogleGenAI } from "@google/genai";
 import cors from "cors";
+import admin from "firebase-admin";
 
 dotenv.config();
+
+const serviceAccountStr = process.env.FIREBASE_SERVICE_ACCOUNT;
+if (serviceAccountStr) {
+  try {
+    const serviceAccount = JSON.parse(serviceAccountStr);
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+    });
+    console.log("Firebase Admin SDK initialized successfully.");
+  } catch (err) {
+    console.error("Error initializing Firebase Admin SDK:", err);
+  }
+} else {
+  console.warn("FIREBASE_SERVICE_ACCOUNT is not set. Firebase Admin SDK will not be initialized.");
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -13,7 +29,7 @@ const __dirname = path.dirname(__filename);
 async function startServer() {
   console.log("Starting server initialization...");
   const app = express();
-  const PORT = 3000;
+  const PORT = process.env.PORT || 3000;
 
   try {
     app.use(cors());
